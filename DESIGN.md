@@ -8,3 +8,8 @@ Local web page for rending an updated and rendered google earth. It will be stre
 
 - WebGL with Javascript
 - Web Assembly for C++ or Rust
+
+
+Interesting links:
+- https://earth.google.com/web/
+- https://github.com/google/earthenterprise
