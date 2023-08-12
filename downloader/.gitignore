@@ -1,0 +1,5 @@
+*.jpg
+*.jpeg
+target
+*idea
+pof-earth-realtime.iml
