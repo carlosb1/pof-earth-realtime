@@ -19,3 +19,13 @@ Local web page for rending an updated and rendered google earth. It will be stre
 Interesting links:
 - https://earth.google.com/web/
 - https://github.com/google/earthenterprise
+- maplibre-Rust
+-
+# Design
+
+- Necessary components:
+	- PostGRESQL and POSTGIS for keeping
+	- TCP Server for getting these images
+	- Cache in the frontend side... loading near frames.
+	- Set up vector tile clas
+	- Call via HTTP a client to receive these images an load them in the web as a grid

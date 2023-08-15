@@ -15,9 +15,10 @@ help:
 build:
 	cargo build --target wasm32-unknown-unknown
 	wasm-bindgen target/wasm32-unknown-unknown/debug/my-webgl-app.wasm --out-dir generated --target web
+	cp index.html generated/
+	cp service.jpeg generated/
 
-run:
+run: build
 	cd generated && python -m http.server 8080 && cd ..
 
-test:
-	@echo "Pending for adding a test"
+test: build

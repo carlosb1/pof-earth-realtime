@@ -1,4 +1,10 @@
 use speedy2d::color::Color;
+use speedy2d::image::ImageSmoothingMode;
+use std::env;
+use std::io::Cursor;
+use std::path::PathBuf;
+
+use pof_earth_downloader::GeoServiceQuery;
 use speedy2d::dimen::Vector2;
 use speedy2d::window::{WindowHandler, WindowHelper};
 use speedy2d::{Graphics2D, WebCanvas};
@@ -15,7 +21,15 @@ impl WindowHandler for MyHandler {
 
     fn on_draw(&mut self, _h: &mut WindowHelper, g: &mut Graphics2D) {
         g.clear_screen(Color::WHITE);
-        g.draw_circle(self.current_mouse_pos, 50.0, Color::BLUE);
+        let image_bytes: &[u8] = include_bytes!("service.jpeg");
+        log::info!("loaded image with size = {:?}", image_bytes.len());
+        let image = g.create_image_from_file_bytes(
+            None,
+            ImageSmoothingMode::Linear,
+            Cursor::new(image_bytes),
+        );
+        g.draw_image((0.0, 0.0), image.clone().as_ref().unwrap());
+        g.draw_image((520.0, 520.0), image.clone().as_ref().unwrap());
     }
 }
 
