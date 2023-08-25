@@ -1,4 +1,5 @@
-use std::io::Cursor;
+use log::trace;
+use std::io::Read;
 
 static HOST: &str = "https://geoserveis.icgc.cat/icc_mapesbase/wms/service";
 static PARAMS: &[(&str, &str)] = &[
@@ -13,6 +14,9 @@ static PARAMS: &[(&str, &str)] = &[
     ("TRANSPARENT", "TRUE"),
     ("EXCEPTION", "INIMAGE"),
 ];
+
+const MAX_SIZE_FILE: u64 = 10_000_000;
+
 type QueryResult<T> = Result<T, Box<dyn std::error::Error + Send + Sync>>;
 
 #[derive(Debug)]
@@ -53,15 +57,22 @@ impl GeoServiceQuery {
             ("HEIGHT".to_string(), self.height.to_string()),
         ]
     }
-    pub async fn fetch_url(&mut self) -> QueryResult<Vec<u8>> {
-        let mut cloned_params: Vec<(String, String)> = self.config_params.clone();
-        cloned_params.append(&mut self.generate_extra_params());
-        let url = reqwest::Url::parse_with_params(self.host.as_str(), cloned_params)?;
-        let response = reqwest::get(url).await?;
-        let mut content = Cursor::new(response.bytes().await?);
+    pub fn fetch_url(&mut self) -> QueryResult<Vec<u8>> {
+        let mut config_params = self.config_params.clone();
+        config_params.append(&mut self.generate_extra_params());
 
-        let mut result: Vec<u8> = vec![];
-        std::io::copy(&mut content, &mut result)?;
-        Ok(result)
+        let parsed_params: Vec<(&str, &str)> = config_params
+            .iter()
+            .map(|(str1, str2)| (str1.as_str(), str2.as_str()))
+            .collect();
+
+        let resp: ureq::Response = ureq::get(HOST).query_pairs(parsed_params).call()?;
+        trace!("request url={:?}", resp.get_url());
+
+        let mut bytes: Vec<u8> = vec![];
+        resp.into_reader()
+            .take(MAX_SIZE_FILE)
+            .read_to_end(&mut bytes)?;
+        Ok(bytes)
     }
 }
