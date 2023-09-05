@@ -12,13 +12,17 @@ help:
 	@echo ' 	test Execute tests for the project'
 	@echo ''
 
+#.cargo/ it includes the configuration
 build:
-	cargo build --target wasm32-unknown-unknown
-	wasm-bindgen target/wasm32-unknown-unknown/debug/my-webgl-app.wasm --out-dir generated --target web
-	cp index.html generated/
-	cp service.jpeg generated/
+	rm -rf generated/*
+	#cargo build --target wasm32-unknown-unknown
+	#wasm-pack build --target web
+	wasm-pack build --target no-modules
+	#cp index.html generated/
+	cp service.jpeg pkg/
+	cp worker.js pkg/
 
 run: build
-	cd generated && python -m http.server 8080 && cd ..
+	simple-http-server --cors --coep --coop --nocache
 
 test: build

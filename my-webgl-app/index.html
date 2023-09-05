@@ -20,11 +20,15 @@
 
 <canvas id="my_canvas"></canvas>
 
-<script type="module" src="./my-webgl-app.js"></script>
+<script src="pkg/my_webgl_app.js"></script>
 
-<script type="module">
-      import main from "./my-webgl-app.js";
-      main();
+<script>
+    const {main} = wasm_bindgen;
+    async function run() {
+            await wasm_bindgen();
+            main();
+    }
+    run();
 </script>
 
 </body>
