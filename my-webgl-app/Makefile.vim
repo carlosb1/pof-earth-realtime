@@ -14,7 +14,7 @@ help:
 
 #.cargo/ it includes the configuration
 build:
-	rm -rf generated/*
+	rm -rf generated
 	#cargo build --target wasm32-unknown-unknown
 	#wasm-pack build --target web
 	wasm-pack build --target no-modules

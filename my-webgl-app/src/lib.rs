@@ -22,15 +22,16 @@ impl MyWorker {
     }
 
     pub fn hello_world(&mut self, name: String) -> String {
+        wasm_logger::init(wasm_logger::Config::default());
         log::info!("Hello world my friend {:?}", name);
         return "Hello world response".to_string();
     }
 }
-fn setup_input_oninput_callback(worker: Rc<RefCell<web_sys::Worker>>) {
-    let document = web_sys::window().unwrap().document().unwrap();
-}
-
-/// Create a closure to act on the message returned by the worker
+//fn setup_input_oninput_callback(worker: Rc<RefCell<web_sys::Worker>>) {
+//    let document = web_sys::window().unwrap().document().unwrap();
+//}
+//
+///// Create a closure to act on the message returned by the worker
 fn get_on_msg_callback() -> Closure<dyn FnMut(MessageEvent)> {
     Closure::new(move |event: MessageEvent| {
         log::info!("Received response: {:?}", &event.data());
@@ -86,7 +87,25 @@ pub fn main() -> Result<(), JsValue> {
 
     WebCanvas::new_for_id("my_canvas", handler).unwrap();
 
-    let worker_handle = Rc::new(RefCell::new(Worker::new("./worker.js").unwrap()));
-    setup_input_oninput_callback(worker_handle);
+    let worker = web_sys::Worker::new("./worker.js").unwrap();
+    let onmessage = get_on_msg_callback();
+    // my callback from the worker
+    worker.set_onmessage(Some(onmessage.as_ref().unchecked_ref()));
+    //send message to worker
+    worker
+        .post_message(&JsValue::from(1.0))
+        .expect("failed to post");
+    std::mem::forget(onmessage);
     Ok(())
+}
+
+#[wasm_bindgen]
+pub fn worker_entry_point(arg: i32) {
+    // Add 1 to our argument and send it back to the main thread.
+    // Yeah, the js_sys/web_sys bindings are ... low-level.
+    js_sys::global()
+        .dyn_into::<web_sys::DedicatedWorkerGlobalScope>()
+        .unwrap()
+        .post_message(&JsValue::from(arg + 1))
+        .unwrap();
 }
